@@ -8,7 +8,6 @@ It runs silently in the background and starts automatically with Windows – no 
 ## 💡 What It Does
 
 * 🧠 **Automatically detects games** and shows the crosshair only when needed
-* 🔄 **Runs at startup** (hidden) – no clicks, no clutter
 * 🎯 **Draws a clean crosshair** in the center of your screen
 * 🧾 **Settings are saved** permanently – no need to reconfigure every time
 
@@ -59,13 +58,12 @@ SPCrosshair automatically activates when any of the following processes are dete
 
 ### 🔽 Step 1: Download
 
-Grab the compiled EXE file from the [Releases](https://github.com/yourname/SPCrosshair/releases) section.
+Grab the compiled EXE file from the [Releases](https://github.com/sparta1st/SPCrosshair) section.
 
 ### 🖱️ Step 2: Launch Once
 
 Just double-click `SPCrosshair.exe`. It will:
 
-* Add itself to your Windows startup folder
 * Run silently in the background
 * Monitor for supported games
 
