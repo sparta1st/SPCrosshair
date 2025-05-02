@@ -1,4 +1,4 @@
-# 🎯 SPCrosshair – Auto Crosshair for All FPS Games
+\# 🎯 SPCrosshair – Auto Crosshair for All FPS Games
 
 **SPCrosshair.exe** is a smart, persistent, customizable on-screen crosshair that automatically appears when you launch popular FPS games like CS2, Valorant, or Fortnite.
 It runs silently in the background and starts automatically with Windows – no manual setup needed.
@@ -11,7 +11,6 @@ It runs silently in the background and starts automatically with Windows – no 
 * 🔄 **Runs at startup** (hidden) – no clicks, no clutter
 * 🎯 **Draws a clean crosshair** in the center of your screen
 * 🧾 **Settings are saved** permanently – no need to reconfigure every time
-* 🔒 **Stays hidden** unless a supported game is running
 
 ---
 
@@ -33,65 +32,69 @@ All settings are controlled via your keyboard + mouse scroll – no mouse clicki
 
 ---
 
-## 🟢 Setup
-
-1. **Download `SPCrosshair.exe`**
-2. Double-click once to run it
-3. That’s it. It will now:
-
-   * Start silently every time Windows boots
-   * Show the crosshair only when a supported game is running
-
----
-
 ## ✅ Supported Games
 
-SPCrosshair automatically detects and activates when the following games are running:
+SPCrosshair automatically activates when any of the following processes are detected:
+
+* Counter-Strike 2 (`cs2.exe`)
+* Counter-Strike: Global Offensive (`csgo.exe`)
+* Valorant (`valorant.exe`)
+* Fortnite (`fortniteclient-win64-shipping.exe`)
+* Apex Legends (`r5apex.exe`)
+* Call of Duty: MW2 / Warzone (`cod.exe`, `mw2.exe`, `warzone.exe`)
+* Overwatch (`overwatch.exe`)
+* Dota 2 (`dota2.exe`)
+* Half-Life 2 (`hl2.exe`)
+* Rainbow Six Siege (`rainbowsix.exe`)
+* Palworld (`palworld-win64-shipping.exe`)
+* Roblox (`robloxplayerbeta.exe`)
+* Battlefield 2042 (`bf2042.exe`)
+* Farlight 84 (`farlight84.exe`)
+
+> ℹ️ Detection is based on background process names. If you want support for more games, open an issue on GitHub!
+
+---
+
+## 📦 How to Use
+
+### 🔽 Step 1: Download
+
+Grab the compiled EXE file from the [Releases](https://github.com/yourname/SPCrosshair/releases) section.
+
+### 🖱️ Step 2: Launch Once
+
+Just double-click `SPCrosshair.exe`. It will:
+
+* Add itself to your Windows startup folder
+* Run silently in the background
+* Monitor for supported games
+
+### 🧠 Step 3: Auto-Start + Auto-Show
+
+Once a supported game launches, the crosshair UI will become visible.
+
+No additional interaction needed!
+
+---
+
+## 📁 Persistence
+
+All your settings (for both PRIMARY and SECONDARY targets) are saved inside:
 
 ```
-cs2.exe
-csgo.exe
-valorant.exe
-fortniteclient-win64-shipping.exe
-r5apex.exe
-cod.exe
-mw2.exe
-warzone.exe
-overwatch.exe
-dota2.exe
-hl2.exe
-rainbowsix.exe
-palworld-win64-shipping.exe
-robloxplayerbeta.exe
-bf2042.exe
-farlight84.exe
+%APPDATA%\.crosshair_data\settings.cfg
 ```
 
-More `.exe` names can be added by editing the internal `game_exes` list.
+You can manually delete this file to reset to default values.
 
 ---
 
+## 🙌 Contributing
 
-## ⚙️ Technical Info
-
-* Runs entirely in the background, no system tray clutter
-* Built in Python and compiled to `.exe` (no dependencies needed)
-* Auto-starts on Windows via shortcut in Startup folder
-* Uses <1% CPU and minimal RAM
+Found a bug or want to add more games? Open a pull request or GitHub issue!
 
 ---
 
-## 📄 License
+## 📜 License
 
-SPCrosshair is 100% free for personal use.
-
-* No telemetry
-* No internet access required
-* No data collection
-
----
-
-## 🙌 Credits
-
-Developed with 💻 and 🎯 by **\[SPARTA]**
-Feel free to fork, improve, or suggest new features on GitHub!
+MIT – Free to use, modify and distribute.
