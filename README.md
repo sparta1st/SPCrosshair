@@ -1,4 +1,4 @@
-#🎯 SPCrosshair – Auto Crosshair for All FPS Games
+# 🎯 SPCrosshair – Auto Crosshair for All FPS Games
 
 **SPCrosshair.exe** is a smart, persistent, customizable on-screen crosshair that automatically appears when you launch popular FPS games like CS2, Valorant, or Fortnite.
 It runs silently in the background and starts automatically with Windows – no manual setup needed.
