@@ -6,10 +6,10 @@ from pathlib import Path
 from pynput import keyboard, mouse
 import psutil
 import time
-
-# === CONFIG & DEFAULTS ===
+import sys
 APPDATA_PATH = Path(os.getenv("APPDATA")) / ".crosshair_data"
 CONFIG_FILE = APPDATA_PATH / "settings.cfg"
+
 defaults = {
     "length": 10,
     "gap": 5,
@@ -17,6 +17,7 @@ defaults = {
     "color": "0,255,255",
     "opacity": 0.6
 }
+
 colors = [
     ("Cyan", "0,255,255"),
     ("Red", "255,0,0"),
@@ -25,14 +26,7 @@ colors = [
     ("Yellow", "255,255,0"),
     ("Magenta", "255,0,255")
 ]
-game_exes = [
-    "csgo.exe", "cs2.exe", "valorant.exe", "fortniteclient-win64-shipping.exe",
-    "r5apex.exe", "cod.exe", "mw2.exe", "warzone.exe", "overwatch.exe",
-    "dota2.exe", "hl2.exe", "rainbowsix.exe", "palworld-win64-shipping.exe",
-    "robloxplayerbeta.exe", "bf2042.exe", "farlight84.exe"
-]
 
-# === STATE ===
 target = "PRIMARY"
 targets = {"PRIMARY": {}, "SECONDARY": {}}
 color_index = 0
@@ -40,7 +34,6 @@ ui_open = False
 extended_open = False
 selected = [None]
 
-# === INIT CONFIG ===
 def ensure_config():
     APPDATA_PATH.mkdir(parents=True, exist_ok=True)
     if not CONFIG_FILE.exists():
@@ -76,20 +69,49 @@ def get_color_name(rgb):
             return name
     return "Custom"
 
-# === UI ===
-def draw_crosshair():
+def draw_crosshair(canvas, vals):
     canvas.delete("all")
-    vals = targets[target]
-    sw, sh = root.winfo_screenwidth(), root.winfo_screenheight()
-    cx, cy = sw // 2, sh // 2
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    cx, cy = screen_width // 2, screen_height // 2
+
     t, l, g = vals["thickness"], vals["length"], vals["gap"]
     r, g_, b = map(int, vals["color"].split(","))
     color = f"#{r:02x}{g_:02x}{b:02x}"
 
-    canvas.create_rectangle(cx - t//2, cy - g - l, cx + t//2, cy - g, fill=color, width=0)
-    canvas.create_rectangle(cx - t//2, cy + g, cx + t//2, cy + g + l, fill=color, width=0)
-    canvas.create_rectangle(cx - g - l, cy - t//2, cx - g, cy + t//2, fill=color, width=0)
-    canvas.create_rectangle(cx + g, cy - t//2, cx + g + l, cy + t//2, fill=color, width=0)
+    # Sus
+    canvas.create_rectangle(
+        cx - t // 2, cy - g - l,
+        cx + (t + 1) // 2, cy - g,
+        fill=color, width=0
+    )
+
+    # Jos
+    canvas.create_rectangle(
+        cx - t // 2, cy + g,
+        cx + (t + 1) // 2, cy + g + l,
+        fill=color, width=0
+    )
+
+    # Stânga
+    canvas.create_rectangle(
+        cx - g - l, cy - t // 2,
+        cx - g, cy + (t + 1) // 2,
+        fill=color, width=0
+    )
+
+    # Dreapta
+    canvas.create_rectangle(
+        cx + g + 1, cy - t // 2,
+        cx + g + l + 1, cy + (t + 1) // 2,
+        fill=color, width=0
+    )
+
+
+
+
+
+
 
 def update_hud():
     vals = targets[target]
@@ -120,22 +142,26 @@ def update_extended():
 
 def toggle_ui():
     global ui_open
-    ui_open = not ui_open
-    hud_window.deiconify() if ui_open else hud_window.withdraw()
     if ui_open:
+        hud_window.withdraw()
+    else:
+        hud_window.deiconify()
         update_hud()
+    ui_open = not ui_open
 
 def toggle_extended():
     global extended_open
-    extended_open = not extended_open
-    extended_window.deiconify() if extended_open else extended_window.withdraw()
     if extended_open:
+        extended_window.withdraw()
+    else:
+        extended_window.deiconify()
         update_extended()
+    extended_open = not extended_open
 
 def switch_target():
     global target
     target = "SECONDARY" if target == "PRIMARY" else "PRIMARY"
-    draw_crosshair()
+    draw_crosshair(canvas, targets[target])
     if ui_open:
         update_hud()
     if extended_open:
@@ -147,63 +173,95 @@ def reset_secondary():
     if extended_open:
         update_extended()
 
-# === INPUT HANDLING ===
-def on_scroll(x, y, dx, dy):
-    if not ui_open or selected[0] is None:
-        return
+
+def adjust_selected_value(step):
     s = selected[0]
     if s == "color":
         global color_index
-        color_index = (color_index + (1 if dy > 0 else -1)) % len(colors)
+        color_index = (color_index + step) % len(colors)
         targets[target]["color"] = colors[color_index][1]
     elif s == "opacity":
         val = targets[target]["opacity"]
-        targets[target]["opacity"] = max(0.1, min(1.0, round(val + (0.05 if dy > 0 else -0.05), 2)))
+        targets[target]["opacity"] = max(0.1, min(1.0, round(val + (0.05 * step), 2)))
     else:
-        targets[target][s] = max(1, targets[target][s] + (1 if dy > 0 else -1))
+        targets[target][s] = max(1, targets[target][s] + step)
     save_config()
-    draw_crosshair()
-    update_hud()
+    draw_crosshair(canvas, targets[target])
+    if ui_open:
+        update_hud()
+
 
 def on_press(key):
     try:
-        if key == keyboard.Key.f1: selected[0] = "length"
-        elif key == keyboard.Key.f2: selected[0] = "gap"
-        elif key == keyboard.Key.f3: selected[0] = "thickness"
-        elif key == keyboard.Key.f4: selected[0] = "color"
-        elif key == keyboard.Key.f5: selected[0] = "opacity"
-        elif key == keyboard.Key.f6: toggle_ui()
-        elif key == keyboard.Key.f7: toggle_extended()
-        elif key == keyboard.Key.f8: reset_secondary()
-        elif key == keyboard.Key.f9: os._exit(0)
-        elif hasattr(key, 'char') and key.char == 'c': switch_target()
-        if ui_open:
-            update_hud()
-    except:
-        pass
+        from pynput.keyboard import Key, Controller
+        kb = Controller()
 
-# === GAME DETECTOR ===
+        if key == Key.f1:
+            selected[0] = "length"
+        elif key == Key.f2:
+            selected[0] = "gap"
+        elif key == Key.f3:
+            selected[0] = "thickness"
+        elif key == Key.f4:
+            selected[0] = "color"
+        elif key == Key.f5:
+            selected[0] = "opacity"
+        elif key == Key.f6:
+            root.after(0, toggle_ui)
+        elif key == Key.f7:
+            root.after(0, toggle_extended)
+        elif key == Key.f8:
+            root.after(0, reset_secondary)
+        elif key == Key.f9:
+            sys.exit(0)
+        elif hasattr(key, 'char') and key.char == 'c':
+            root.after(0, switch_target)
+
+        # Aplica doar dacă UI e deschis
+        if ui_open and selected[0]:
+            if key == Key.shift_l:
+                adjust_selected_value(-1)
+            elif key == Key.ctrl_l:
+                adjust_selected_value(1)
+
+        if ui_open:
+            root.after(0, update_hud)
+
+    except Exception as e:
+        print("Error in on_press:", e)
+
+
+# Game detection
+game_exes = [
+    "csgo.exe", "cs2.exe", "valorant.exe", "fortniteclient-win64-shipping.exe",
+    "r5apex.exe", "cod.exe", "mw2.exe", "warzone.exe", "overwatch.exe",
+    "dota2.exe", "hl2.exe", "rainbowsix.exe", "palworld-win64-shipping.exe",
+    "robloxplayerbeta.exe", "bf2042.exe", "farlight84.exe"
+]
+
 def is_game_running():
     for proc in psutil.process_iter(['name']):
         if proc.info['name'] and proc.info['name'].lower() in game_exes:
             return True
     return False
 
-def game_loop():
-    visible = False
+def auto_crosshair_toggle():
+    shown = False
     while True:
         if is_game_running():
-            if not visible:
-                root.deiconify()
-                draw_crosshair()
-                visible = True
+            if not shown:
+                print("✅ Game detected!")
+                root.after(0, root.deiconify)
+                root.after(10, lambda: draw_crosshair(canvas, targets[target]))
+                shown = True
         else:
-            if visible:
-                root.withdraw()
-                visible = False
+            if shown:
+                print("❌ Game not detected.")
+                root.after(0, root.withdraw)
+                shown = False
         time.sleep(2)
 
-# === INIT ===
+# Init
 load_config()
 save_config()
 
@@ -211,13 +269,12 @@ root = tk.Tk()
 root.overrideredirect(True)
 root.attributes("-topmost", True)
 root.wm_attributes("-transparentcolor", "black")
+root.attributes("-alpha", 1.0)
 root.geometry(f"{root.winfo_screenwidth()}x{root.winfo_screenheight()}+0+0")
 
 canvas = tk.Canvas(root, bg="black", highlightthickness=0)
 canvas.pack(fill="both", expand=True)
-root.withdraw()
 
-# HUD
 hud_window = tk.Toplevel(root)
 hud_window.overrideredirect(True)
 hud_window.attributes("-topmost", True)
@@ -227,7 +284,9 @@ hud_window.geometry(f"340x300+{root.winfo_screenwidth() - 360}+40")
 
 main_frame = tk.Frame(hud_window, bg="white")
 main_frame.pack(padx=10, pady=8)
-tk.Label(main_frame, text="Use mouse scroll to select option", font=("Consolas", 10), fg="#FF0000", bg="white").pack(pady=(0, 10), anchor="w")
+instruction = tk.Label(main_frame, text="Use mouse scroll to select option", font=("Consolas", 10), fg="#FF0000", bg="white")
+instruction.pack(pady=(0, 10), anchor="w")
+
 hud_rows = []
 for _ in range(10):
     frame = tk.Frame(main_frame, bg="white")
@@ -241,9 +300,9 @@ for _ in range(10):
     row["value"].pack(side="left")
     row["key"].pack(side="left")
     hud_rows.append(row)
+
 hud_window.withdraw()
 
-# EXTENDED HUD
 extended_window = tk.Toplevel(root)
 extended_window.overrideredirect(True)
 extended_window.attributes("-topmost", True)
@@ -254,9 +313,10 @@ extended_label = tk.Label(extended_window, text="", font=("Consolas", 10), justi
 extended_label.pack(padx=10, pady=10, fill="both", expand=True)
 extended_window.withdraw()
 
-# LISTENERS
-threading.Thread(target=lambda: keyboard.Listener(on_press=on_press).run(), daemon=True).start()
-threading.Thread(target=lambda: mouse.Listener(on_scroll=on_scroll).run(), daemon=True).start()
-threading.Thread(target=game_loop, daemon=True).start()
+# Threads
+keyboard.Listener(on_press=on_press, suppresed=False).start()
+threading.Thread(target=auto_crosshair_toggle, daemon=True).start()
 
+# Start
+root.withdraw()
 root.mainloop()
